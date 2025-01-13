@@ -1,25 +1,28 @@
-import time
 import tkinter as tk
 from tkinter import ttk
 import psutil
+import time
+from database import SystemRecord, session
+
 
 
 # GUI Application
 class SystemMonitorApp:
-    def __init__(self, root):
+    def __init__(self, root, session):
+        self.session = session
         self.root = root
         self.root.title("System Monitor")
         self.root.geometry("300x200")
-
+        
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_rowconfigure(1, weight=1)  
         self.root.grid_columnconfigure(0, weight=1)  
-        self.root.grid_columnconfigure(1, weight=1)
-        
+        self.root.grid_columnconfigure(1, weight=1)  
+
         self.is_recording = False
-        self.update_interval = 1000  # Default update interval in ms
+        self.update_interval = 1000
         self.start_time = None
-        
+
         self.create_ui()
         self.update_stats()
 
@@ -88,7 +91,7 @@ class SystemMonitorApp:
             pady=2
         )
         self.stop_button.grid(row=6, column=1, columnspan=2, padx=10, pady=5, sticky="wes")
-        self.stop_button.grid_remove()
+        self.stop_button.grid_remove()  # Hide initially
 
 
     def update_stats(self):
@@ -97,8 +100,8 @@ class SystemMonitorApp:
         storage = psutil.disk_usage('/')
 
         self.cpu_label.config(text=f"CPU: {cpu}%")
-        self.ram_label.config(text=f"RAM: {round(ram.available/ (1024**3), 1)}GB/{ram.total // (1024**3)}GB")
-        self.storage_label.config(text=f"Storage: {storage.free // (1024**3)}GB/{storage.total // (1024**3)}GB")
+        self.ram_label.config(text=f"RAM: {round(ram.available / (1024**3), 1)}GB/{ram.total // (1024**3)}GB")
+        self.storage_label.config(text=f"Storage: {round(storage.free / (1024**3), 1)}GB/{storage.total // (1024**3)}GB")
 
         if self.is_recording:
             self.record_data(cpu, ram.percent, storage.percent)
@@ -107,20 +110,35 @@ class SystemMonitorApp:
 
         self.root.after(self.update_interval, self.update_stats)
 
-    
+
     def start_recording(self):
-        ...
+        self.is_recording = True
+        self.start_time = time.time()
+        self.start_button.grid_remove()
+        self.stop_button.grid()
+        self.timer_label.grid(row=7, column=0, columnspan=2, padx=10, pady=10, sticky="s")
 
 
     def stop_recording(self):
-        ...
-        
-    
+        self.is_recording = False
+        self.start_button.grid()
+        self.stop_button.grid_remove()
+        self.timer_label.config(text="00:00")
+        self.timer_label.grid_remove()
+
+
+    def record_data(self, cpu, ram, storage):
+        record = SystemRecord(cpu_load=cpu, ram_load=ram, storage_load=storage)
+        self.session.add(record)
+        self.session.commit()
+
+
     def view_history(self):
         ...
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = SystemMonitorApp(root)
+    app = SystemMonitorApp(root, session)
     root.mainloop()
+
