@@ -1,12 +1,13 @@
-import os
+import time
 import tkinter as tk
 from tkinter import ttk
+
 import psutil
-import time
 import pytz
 from tzlocal import get_localzone
-from database import SystemRecord, session
 
+from monitor_app.database import SystemRecord, session
+from monitor_app.settings import settings
 
 
 # GUI Application
@@ -23,7 +24,7 @@ class SystemMonitorApp:
         self.root.grid_columnconfigure(1, weight=1)  
 
         self.is_recording = False
-        self.update_interval = 1000
+        self.update_interval = int(settings.update_interval)
         self.start_time = None
 
         self.create_ui()
@@ -141,9 +142,9 @@ class SystemMonitorApp:
         history_window.title("Recorded data")
         tree = ttk.Treeview(history_window, columns=('Time', 'CPU', 'RAM', 'STORAGE'), show='headings')
         tree.heading('Time', text='Time')
-        tree.heading('CPU', text='CPU (%)')
+        tree.heading('CPU', text='CPU %')
         tree.heading('RAM', text='RAM %')
-        tree.heading('STORAGE', text='STORAGE %)')
+        tree.heading('STORAGE', text='STORAGE %')
         tree.grid(row=0, column=0, padx=10, pady=5)
         
         local_timezone = pytz.timezone(get_localzone().key)

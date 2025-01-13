@@ -1,13 +1,8 @@
-import os
 from datetime import datetime
 import pytz
 from sqlalchemy import create_engine, Column, Integer, Float, DateTime
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
-from dotenv import load_dotenv
-load_dotenv()
-
-
-__all__ = ("SystemRecord", "session")
+from monitor_app.settings import settings
 
 
 class Base(DeclarativeBase):     
@@ -23,7 +18,7 @@ class SystemRecord(Base):
     storage_load = Column(Float)
 
 
-engine = create_engine(os.getenv("DB_URI", "sqlite:///system_data.db"))
+engine = create_engine(settings.db_uri)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
