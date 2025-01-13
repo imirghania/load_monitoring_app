@@ -1,7 +1,10 @@
+import os
 import tkinter as tk
 from tkinter import ttk
 import psutil
 import time
+import pytz
+from tzlocal import get_localzone
 from database import SystemRecord, session
 
 
@@ -134,7 +137,29 @@ class SystemMonitorApp:
 
 
     def view_history(self):
-        ...
+        history_window = tk.Toplevel(self.root)
+        history_window.title("Recorded data")
+        tree = ttk.Treeview(history_window, columns=('Time', 'CPU', 'RAM', 'STORAGE'), show='headings')
+        tree.heading('Time', text='Time')
+        tree.heading('CPU', text='CPU (%)')
+        tree.heading('RAM', text='RAM %')
+        tree.heading('STORAGE', text='STORAGE %)')
+        tree.grid(row=0, column=0, padx=10, pady=5)
+        
+        local_timezone = pytz.timezone(get_localzone().key)
+
+        records = self.session.query(SystemRecord).all()
+        for record in records:
+            tree.insert('', 'end', 
+                        values=(
+                            record.time.replace(
+                                tzinfo=pytz.utc
+                                ).astimezone(tz=local_timezone), 
+                            record.cpu_load, 
+                            record.ram_load, 
+                            record.storage_load
+                            )
+                        )
 
 
 if __name__ == "__main__":
