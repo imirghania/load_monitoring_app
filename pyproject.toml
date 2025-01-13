@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "monitor-app"
+version = "0.1.0"
+description = ""
+authors = ["imirghania <imirghania@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+python-dotenv = "^1.0.1"
+pytz = "^2024.2"
+tzlocal = "^5.2"
+psutil = "^6.1.1"
+sqlalchemy = "^2.0.37"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
