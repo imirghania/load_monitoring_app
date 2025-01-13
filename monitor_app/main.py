@@ -1,5 +1,7 @@
+import time
 import tkinter as tk
 from tkinter import ttk
+import psutil
 
 
 # GUI Application
@@ -14,7 +16,12 @@ class SystemMonitorApp:
         self.root.grid_columnconfigure(0, weight=1)  
         self.root.grid_columnconfigure(1, weight=1)
         
+        self.is_recording = False
+        self.update_interval = 1000  # Default update interval in ms
+        self.start_time = None
+        
         self.create_ui()
+        self.update_stats()
 
 
     def create_ui(self):
@@ -82,7 +89,24 @@ class SystemMonitorApp:
         )
         self.stop_button.grid(row=6, column=1, columnspan=2, padx=10, pady=5, sticky="wes")
         self.stop_button.grid_remove()
-    
+
+
+    def update_stats(self):
+        cpu = psutil.cpu_percent()
+        ram = psutil.virtual_memory()
+        storage = psutil.disk_usage('/')
+
+        self.cpu_label.config(text=f"CPU: {cpu}%")
+        self.ram_label.config(text=f"RAM: {round(ram.available/ (1024**3), 1)}GB/{ram.total // (1024**3)}GB")
+        self.storage_label.config(text=f"Storage: {storage.free // (1024**3)}GB/{storage.total // (1024**3)}GB")
+
+        if self.is_recording:
+            self.record_data(cpu, ram.percent, storage.percent)
+            elapsed_time = int(time.time() - self.start_time)
+            self.timer_label.config(text=f"{elapsed_time // 60:02}:{elapsed_time % 60:02}")
+
+        self.root.after(self.update_interval, self.update_stats)
+
     
     def start_recording(self):
         ...
